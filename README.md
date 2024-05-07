@@ -15,7 +15,11 @@
 - Armazenar dados de clientes e contas bancárias em objetos;
 - Implementar POO no sistema baseado no modelo de classe UML apresentado:
 
-### Conta
+
+<br>
+<br>
+
+$\large{\textsf{\textcolor{powderblue}{Classe: Conta}}}$
 
 <table>
 <tr>
@@ -45,7 +49,10 @@
 </td>
 </table>
 
-### Classe: ContaCorrente
+<br>
+<br>
+
+$\large{\textsf{\textcolor{powderblue}{Classe: Conta\_corrente}}}$
 
 Classe filha da classe **Conta**.
 
@@ -54,19 +61,31 @@ Classe filha da classe **Conta**.
 | limite | float (privado) |
 | limite_saques | int (privado) |
 
-### Classe: Historico
+
+<br>
+<br>
+
+$\large{\textsf{\textcolor{powderblue}{Classe: Historico}}}$
 
 | **Método** | **Parâmetros** | **Retorno** |
 | --- | --- | --- |
 | adicionar_transacao | transacao: *Transacao* | - |
 
-### Classe: Transacao (interface)
+
+<br>
+<br>
+
+$\large{\textsf{\textcolor{powderblue}{Classe: Transacao (interface)}}}$
 
 | **Método** | **Parâmetros** | **Retorno** |
 | --- | --- | --- |
 | registrar | conta: *Conta* | - |
 
-### Classes: Deposito e Saque
+
+<br>
+<br>
+
+$\large{\textsf{\textcolor{powderblue}{Classes: Deposito e Saque}}}$
 
 As duas classes fazem uso da interface Transacao.
 
@@ -74,7 +93,11 @@ As duas classes fazem uso da interface Transacao.
 | --- | --- |
 | valor | int (privado) |
 
-### Classe: Cliente
+
+<br>
+<br>
+
+$\large{\textsf{\textcolor{powderblue}{Classe: Cliente}}}$
 
 <table>
 <tr>
@@ -95,13 +118,17 @@ As duas classes fazem uso da interface Transacao.
 
 | **Método** | **Parâmetros** | **Retorno** |
 | --- | --- | --- |
-| realizar transacao | conta: *Conta*; transacao: *Transacao* | - |
+| realizar_transacao | conta: *Conta*; transacao: *Transacao* | - |
 | adicionar_conta | conta: *Conta* | - |
 
 </td>
 </table>
 
-### Classe: PessoaFisica
+
+<br>
+<br>
+
+$\large{\textsf{\textcolor{powderblue}{Classe: Pessoa\_fisica}}}$
 
 Classe filha da classe **Cliente**
 
