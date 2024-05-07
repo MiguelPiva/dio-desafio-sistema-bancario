@@ -52,7 +52,7 @@ $\large{\textsf{\textcolor{powderblue}{Classe: Conta}}}$
 <br>
 <br>
 
-$\large{\textsf{\textcolor{powderblue}{Classe: Conta\_corrente}}}$
+$\large{\textsf{\textcolor{powderblue}{Classe: Conta\underbar{\space\space}corrente}}}$
 
 Classe filha da classe **Conta**.
 
@@ -128,7 +128,7 @@ $\large{\textsf{\textcolor{powderblue}{Classe: Cliente}}}$
 <br>
 <br>
 
-$\large{\textsf{\textcolor{powderblue}{Classe: Pessoa\_fisica}}}$
+$\large{\textsf{\textcolor{powderblue}{Classe: Pessoa\underbar{\space\space}fisica}}}$
 
 Classe filha da classe **Cliente**
 
