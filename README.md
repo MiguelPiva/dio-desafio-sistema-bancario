@@ -15,8 +15,6 @@
 - Armazenar dados de clientes e contas bancárias em objetos;
 - Implementar POO no sistema baseado no modelo de classe UML apresentado:
 
-##### Obs: Nomes de classes com hífen (-) no README.md possuem sublinhado (_) substituindo o hífen dentro do código.
-
 <br>
 <br>
 
@@ -53,7 +51,7 @@ $\large{\textsf{\textcolor{powderblue}{Classe: Conta}}}$
 <br>
 <br>
 
-$\large{\textsf{\textcolor{powderblue}{Classe: Conta-corrente}}}$
+$\large{\textsf{\textcolor{powderblue}{Classe: ContaCorrente}}}$
 
 Classe filha da classe **Conta**.
 
@@ -129,7 +127,7 @@ $\large{\textsf{\textcolor{powderblue}{Classe: Cliente}}}$
 <br>
 <br>
 
-$\large{\textsf{\textcolor{powderblue}{Classe: Pessoa-fisica}}}$
+$\large{\textsf{\textcolor{powderblue}{Classe: PessoaFisica}}}$
 
 Classe filha da classe **Cliente**
 
