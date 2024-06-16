@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime
+from pathlib import Path
 
 
 # Classes
@@ -22,12 +23,12 @@ class IteradorContas:
                 return f"Número: {conta.numero} || Saldo: {conta.saldo}"
             else:
                 return f"Agência: {conta.agencia} \nNúmero: {conta.numero} \nProprietário: {conta.cliente.nome} \nSaldo: {conta.saldo}"
-        
+
         except IndexError:
             raise StopIteration
-        
+
         finally:
-            self._indice += 1       
+            self._indice += 1
 
 
 # Classe Transacao
@@ -116,7 +117,7 @@ class Cliente:
         if len(conta.historico.transacoes_do_dia()) >= 10:
             print("Limite de transações diárias atingido.")
             return
-        
+
         transacao.registrar(conta)
 
     def adicionar_conta(self, conta: Conta):
@@ -135,9 +136,9 @@ class Historico:
     def registrar_transacao(self, transacao: Transacao):
         self._transacoes.append(
             {
-            "tipo": transacao.__class__.__name__,
-            "valor": transacao.valor,
-            "data": datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+                "tipo": transacao.__class__.__name__,
+                "valor": transacao.valor,
+                "data": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
             }
         )
 
@@ -158,11 +159,13 @@ class Historico:
 
 # Classe PessoaFisica
 class PessoaFisica(Cliente):
-    def __init__(self, cpf: str, nome: str, data_nascimento: datetime.date, endereco: str):
+    def __init__(
+        self, cpf: str, nome: str, data_nascimento: datetime.date, endereco: str
+    ):
+        super().__init__(endereco)
         self._cpf = cpf
         self._nome = nome
         self._data_nascimento = data_nascimento
-        super().__init__(endereco)
 
     @property
     def cpf(self):
@@ -175,10 +178,13 @@ class PessoaFisica(Cliente):
     @property
     def data_nascimento(self):
         return self._data_nascimento
-    
+
     @property
     def endereco(self):
         return self._endereco
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}: ('{self.nome}', '{self.cpf}')>"
 
 
 # Classe ContaCorrente
@@ -193,7 +199,18 @@ class ContaCorrente(Conta):
         limite_saques = self._limite_saques
 
         excedeu_limite = valor > limite
-        excedeu_limite_saques = (True if len([transacao for transacao in self._historico.transacoes if transacao["tipo"] == Saque.__name__]) >= limite_saques else False)
+        excedeu_limite_saques = (
+            True
+            if len(
+                [
+                    transacao
+                    for transacao in self._historico.transacoes
+                    if transacao["tipo"] == Saque.__name__
+                ]
+            )
+            >= limite_saques
+            else False
+        )
 
         if excedeu_limite:
             print("O valor solicitado está acima do limite de saque estabelecido.")
@@ -203,6 +220,12 @@ class ContaCorrente(Conta):
             return False
         else:
             return super().sacar(valor)
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}: ('{self.agencia}', '{self.numero}', '{self.cliente.nome}')>"
+
+    def __str__(self) -> str:
+        return f"Agência: {self.agencia} \nC/C: {self.numero} \nTitular: {self.cliente.nome}"
 
 
 # Classe Deposito
@@ -239,9 +262,10 @@ class Saque(Transacao):
 
 # Funções
 # //////////////////////////////////////////
-# Função imprimir_separador
+# Função para imprimir um separador no terminal
 def imprimir_separador() -> None:
     print("====================================")
+
 
 # Interface do terminal
 def interface() -> int:
@@ -266,23 +290,37 @@ com o desejar fazer:
     return opcao
 
 
-def log_transacao(func):
+def log_aplicacao(func):
     def retorno_func(*args, **kwargs):
         resultado = func(*args, **kwargs)
-        print(f"{datetime.now()}: {func.__name__.upper()}") if resultado != False else None
+        data_hora = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        try:
+            log_arquivo = open(f"logs.txt", "a")
+            log_arquivo.close()
+        except FileNotFoundError:
+            ROOT_PATH = Path(__file__).parent
+            log_arquivo = open(f"{ROOT_PATH}logs.txt", "w")
+            log_arquivo.close()
+        except IOError:
+            print("Erro ao criar ou abrir o arquivo log.txt")
+            return
+
+        with open("logs.txt", "a", newline="", encoding="utf-8") as arquivo:
+            log = f"[{data_hora}] Função '{func.__name__}' executada com argumentos {args} e {kwargs}. Retornou {resultado}.\n "
+            arquivo.write(log)
         return resultado
 
     return retorno_func
 
 
-@log_transacao
+@log_aplicacao
 def depositar(clientes) -> None:
     cpf = input("Informe o CPF (somente números): ")
     cliente_filtrado = filtrar_cliente(cpf, clientes)
     if cliente_filtrado:
         if len(cliente_filtrado.contas) == 0:
             print("O cliente não possui contas.")
-            return False
+            return
 
         contas = cliente_filtrado.contas
         exibir_contas(contas, 1)
@@ -291,27 +329,27 @@ def depositar(clientes) -> None:
         conta_filtrada = [conta for conta in contas if conta.numero == numero]
         if conta_filtrada == []:
             print("Conta inválida.")
-            return False
+            return
 
         conta_filtrada = conta_filtrada.pop()
         valor = float(input("Qual é o valor a ser depositado?: "))
-        transacao = Deposito(valor)        
+        transacao = Deposito(valor)
         cliente_filtrado.realizar_transacao(conta=conta_filtrada, transacao=transacao)
-        return True
-    
+        return
+
     else:
         print("O CPF informado não está vinculado a nenhum cliente.")
-        return False
+        return
 
 
-@log_transacao
+@log_aplicacao
 def sacar(clientes) -> bool:
     cpf = input("Informe o CPF (somente números): ")
     cliente_filtrado = filtrar_cliente(cpf, clientes)
     if cliente_filtrado:
         if len(cliente_filtrado.contas) == 0:
             print("O cliente não possui contas.")
-            return False
+            return
 
         contas = cliente_filtrado.contas
         exibir_contas(contas, 1)
@@ -320,20 +358,21 @@ def sacar(clientes) -> bool:
         conta_filtrada = [conta for conta in contas if conta.numero == numero]
         if conta_filtrada == []:
             print("Conta inválida.")
-            return False
+            return
 
         conta_filtrada = conta_filtrada.pop()
         valor = float(input("Qual é o valor a ser sacado?: "))
         transacao = Saque(valor)
-        return True
         cliente_filtrado.realizar_transacao(conta=conta_filtrada, transacao=transacao)
-    
+        return
+
     else:
         print("O CPF informado não está vinculado a nenhum cliente.")
-        return False
+        return
 
 
 # Função mostrar_extrato
+@log_aplicacao
 def mostrar_extrato(clientes) -> None:
     cpf = input("Informe o CPF (somente números): ")
     cliente_filtrado = filtrar_cliente(cpf, clientes)
@@ -353,13 +392,21 @@ def mostrar_extrato(clientes) -> None:
 
         total_depositos = 0
         total_saques = 0
-        for transacao in conta_filtrada[0].historico.gerar_relatorio(tipo_transacao="saque"):
-            print(f"Data: {transacao['data']} || Tipo: {transacao['tipo']} || Valor: {transacao['valor']}")
+        for transacao in conta_filtrada[0].historico.gerar_relatorio(
+            tipo_transacao="saque"
+        ):
+            print(
+                f"Data: {transacao['data']} || Tipo: {transacao['tipo']} || Valor: {transacao['valor']}"
+            )
             if transacao["tipo"] == Saque.__name__:
                 total_saques += transacao["valor"]
 
-        for transacao in conta_filtrada[0].historico.gerar_relatorio(tipo_transacao="deposito"):
-            print(f"Data: {transacao['data']} || Tipo: {transacao['tipo']} || Valor: {transacao['valor']}")
+        for transacao in conta_filtrada[0].historico.gerar_relatorio(
+            tipo_transacao="deposito"
+        ):
+            print(
+                f"Data: {transacao['data']} || Tipo: {transacao['tipo']} || Valor: {transacao['valor']}"
+            )
             if transacao["tipo"] == Deposito.__name__:
                 total_depositos += transacao["valor"]
 
@@ -376,6 +423,7 @@ def filtrar_cliente(cpf, clientes):
 
 
 # Função criar_cliente
+@log_aplicacao
 def criar_cliente(clientes) -> None:
     cpf = input("Informe o CPF (somente números): ")
     cliente = filtrar_cliente(cpf, clientes)
@@ -386,14 +434,19 @@ def criar_cliente(clientes) -> None:
     else:
         nome = input("Informe o nome completo: ")
         data_nascimento = input("Informe a data de nascimento (dd-mm-aaaa): ")
-        endereco = input("Informe o endereço (logradouro, nro - bairro - cidade/sigla estado): ")
+        endereco = input(
+            "Informe o endereço (logradouro, nro - bairro - cidade/sigla estado): "
+        )
 
         data_nascimento = datetime.strptime(data_nascimento, "%d-%m-%Y").date()
-        cliente = PessoaFisica(cpf=cpf, nome=nome, data_nascimento=data_nascimento, endereco=endereco)
+        cliente = PessoaFisica(
+            cpf=cpf, nome=nome, data_nascimento=data_nascimento, endereco=endereco
+        )
         clientes.append(cliente)
 
 
 # Função criar_conta
+@log_aplicacao
 def criar_conta(numero_conta, clientes, contas) -> None:
     cpf = input("Informe o CPF (somente números): ")
     cliente = filtrar_cliente(cpf, clientes)
@@ -423,8 +476,11 @@ def exibir_contas(contas, info) -> None:
 def exibir_clientes(clientes) -> None:
     for cliente in clientes:
         nascimento = cliente.data_nascimento.strftime("%d-%m-%Y")
-        print(f"Nome: {cliente.nome} \nCPF: {cliente.cpf} \nnascimento: {nascimento} \nEndereço: {cliente.endereco}")
+        print(
+            f"Nome: {cliente.nome} \nCPF: {cliente.cpf} \nnascimento: {nascimento} \nEndereço: {cliente.endereco}"
+        )
         print("||||||||||||||||||||||||||||||||||||")
+
 
 # Código principal
 # //////////////////////////////////////////
